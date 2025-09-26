@@ -129,11 +129,13 @@ function UploadSuccess({ result }: UploadSuccessProps) {
                   Direct Download
                 </a>
               </Button>
-              <Button asChild variant="outline" className="flex-1">
-                <Link href="/upload">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Another
-                </Link>
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => window.location.reload()}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Another
               </Button>
             </div>
           </div>
@@ -146,7 +148,7 @@ function UploadSuccess({ result }: UploadSuccessProps) {
 // Hero Section Component
 function HeroSection() {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative h-screen flex items-center justify-center">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -201,7 +203,7 @@ interface UploadSectionProps {
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFileInputClick: () => void;
   onUpload: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 function UploadSection({ 
@@ -213,7 +215,7 @@ function UploadSection({
   fileInputRef 
 }: UploadSectionProps) {
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-gradient-to-br from-blue-50 to-blue-100">
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -224,8 +226,8 @@ function UploadSection({
           </p>
         </div>
 
-        <Card className="bg-white shadow-2xl">
-          <CardHeader className="text-center">
+        <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border-0 rounded-3xl">
+          <CardHeader className="text-center pb-8">
             <CardTitle className="text-3xl text-blue-600">Choose Your Image</CardTitle>
             <CardDescription className="text-lg">
               Select an image file to upload and generate a QR code
@@ -242,7 +244,7 @@ function UploadSection({
               />
               
               <div 
-                className="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center cursor-pointer hover:border-blue-500 transition-all duration-300 hover:bg-blue-50 group"
+                className="border-2 border-dashed border-gray-300 rounded-3xl p-12 text-center cursor-pointer hover:border-blue-500 transition-all duration-300 hover:bg-blue-50 group hover:shadow-lg"
                 onClick={onFileInputClick}
               >
                 <div className="flex flex-col items-center">
@@ -263,7 +265,7 @@ function UploadSection({
               </div>
 
               {selectedFile && (
-                <Card className="bg-green-50 border-green-200">
+                <Card className="bg-green-50 border-green-200 rounded-2xl">
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-3">
                       <CheckCircle className="w-6 h-6 text-green-600" />
@@ -288,7 +290,7 @@ function UploadSection({
                 onClick={onUpload}
                 disabled={!selectedFile || isUploading}
                 size="lg"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-lg font-semibold py-4 rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-lg font-semibold py-4 rounded-2xl shadow-lg hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
               >
                 {isUploading ? (
                   <div className="flex items-center space-x-2">
@@ -307,7 +309,7 @@ function UploadSection({
             <Separator />
 
             <div className="flex justify-center">
-              <Button asChild variant="outline" size="lg" className="bg-transparent text-blue-600 border-blue-600 hover:bg-blue-50">
+              <Button asChild variant="outline" size="lg" className="bg-transparent text-blue-600 border-blue-600 hover:bg-blue-50 rounded-2xl">
                 <Link href="/">
                   <ArrowLeft className="w-5 h-5 mr-2" />
                   Back to Home

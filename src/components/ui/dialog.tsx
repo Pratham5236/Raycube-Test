@@ -31,17 +31,17 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
-  React.useEffect(() => {
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-    document.body.style.paddingRight = '0px';
+  // React.useEffect(() => {
+  //   // Prevent body scroll when modal is open
+  //   document.body.style.overflow = 'hidden';
+  //   document.body.style.paddingRight = '0px';
     
-    return () => {
-      // Restore body scroll when modal closes
-      document.body.style.overflow = 'unset';
-      document.body.style.paddingRight = '0px';
-    };
-  }, []);
+  //   return () => {
+  //     // Restore body scroll when modal closes
+  //     document.body.style.overflow = 'unset';
+  //     document.body.style.paddingRight = '0px';
+  //   };
+  // }, []);
 
   return (
     <DialogPortal>

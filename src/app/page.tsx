@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Pizza, Users, Download, Upload, Star, ChefHat, Clock, Award, CheckCircle, FileText } from 'lucide-react';
+import { Pizza, Users, Download, Upload, Star, ChefHat, Clock, Award, CheckCircle, FileText, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -135,12 +135,7 @@ function RegistrationSuccess() {
 
             {/* Action Buttons */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button asChild className="h-14 bg-red-600 hover:bg-red-700 text-lg font-semibold rounded-xl shadow-lg hover:shadow-red-500/25 transition-all duration-300 transform hover:scale-105">
-                <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener noreferrer">
-                  <Download className="w-5 h-5 mr-2" />
-                  Download Video
-                </a>
-              </Button>
+              <YouTubeDownloadButton />
               <Button asChild variant="outline" className="h-14 text-lg font-semibold rounded-xl border-2 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-300">
                 <Link href="/upload">
                   <Upload className="w-5 h-5 mr-2" />
@@ -187,19 +182,24 @@ interface HeroSectionProps {
 
 function HeroSection({ onOpenModal }: HeroSectionProps) {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative h-screen flex items-center justify-center">
+      {/* Black Background Base */}
+      <div className="absolute inset-0 bg-black" />
+      
       {/* Background Image with Parallax Effect */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-110"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('https://www.tasteandflavors.com/wp-content/uploads/2021/02/best-pizza-landscape.gif')`,
+          opacity: 0.4,
+          filter: 'sepia(20%) saturate(120%) hue-rotate(350deg)',
           transform: 'translateZ(0)',
           willChange: 'transform'
         }}
       />
       
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-red-600/80 via-red-700/80 to-red-800/80" />
+      {/* Subtle Red Tint */}
+      <div className="absolute inset-0 bg-red-600/20" />
       
       {/* Floating Elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -541,5 +541,60 @@ function RegistrationModal({ formData, onInputChange, onSubmit, isSubmitting }: 
         </Button>
       </form>
     </DialogContent>
+  );
+}
+
+// YouTube Download Button Component
+function YouTubeDownloadButton() {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await fetch('/api/youtube-download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setDownloadUrl(result.downloadUrl);
+        // Open the download page in a new tab
+        window.open(result.downloadUrl, '_blank');
+      } else {
+        alert('Download failed. Please try again.');
+      }
+    } catch (error) {
+      alert('Download failed. Please try again.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  return (
+    <Button 
+      onClick={handleDownload}
+      disabled={isDownloading}
+      className="h-14 bg-red-600 hover:bg-red-700 text-lg font-semibold rounded-xl shadow-lg hover:shadow-red-500/25 transition-all duration-300 transform hover:scale-105"
+    >
+      {isDownloading ? (
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <span>Processing...</span>
+        </div>
+      ) : (
+        <div className="flex items-center space-x-2">
+          <Download className="w-5 h-5" />
+          <span>Download Video</span>
+          <ExternalLink className="w-4 h-4" />
+        </div>
+      )}
+    </Button>
   );
 }
