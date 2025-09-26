@@ -99,7 +99,7 @@ class Database {
         args: [user.id]
       });
       
-      return result.rows[0] as User;
+      return result.rows[0] as unknown as User;
     } catch (err) {
       throw err;
     }
@@ -113,7 +113,7 @@ class Database {
         sql: 'SELECT * FROM users ORDER BY registeredAt DESC'
       });
       
-      return result.rows as User[];
+      return result.rows as unknown as User[];
     } catch (err) {
       throw err;
     }
@@ -133,7 +133,7 @@ class Database {
         args: [photo.id]
       });
       
-      return result.rows[0] as PhotoUpload;
+      return result.rows[0] as unknown as PhotoUpload;
     } catch (err) {
       throw err;
     }
@@ -148,7 +148,7 @@ class Database {
         args: [id]
       });
       
-      return result.rows[0] as PhotoUpload | null;
+      return result.rows[0] as unknown as PhotoUpload | null;
     } catch (err) {
       throw err;
     }
