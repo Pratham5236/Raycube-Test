@@ -259,7 +259,7 @@ function UploadSection({
                   </p>
                   <div className="flex items-center space-x-2 text-sm text-gray-400">
                     <CheckCircle className="w-4 h-4" />
-                    <span>Max file size: 10MB</span>
+                    <span>Max file size: 4MB</span>
                   </div>
                 </div>
               </div>

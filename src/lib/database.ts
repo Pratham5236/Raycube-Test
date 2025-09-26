@@ -1,7 +1,9 @@
-import sqlite3 from 'sqlite3';
-import path from 'path';
+import { createClient } from '@libsql/client';
 
-const dbPath = path.join(process.cwd(), 'database.sqlite');
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
 export interface User {
   id: string;
@@ -21,53 +23,14 @@ export interface PhotoUpload {
 }
 
 class Database {
-  private db: sqlite3.Database;
-
   constructor() {
-    this.db = new sqlite3.Database(dbPath);
     this.init();
   }
 
-  private init() {
-    // Create users table
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        phone TEXT NOT NULL,
-        registeredAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `, (err) => {
-      if (err) {
-        console.error('Error creating users table:', err);
-      } else {
-        console.log('Users table created successfully');
-      }
-    });
-
-    // Create photo_uploads table
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS photo_uploads (
-        id TEXT PRIMARY KEY,
-        filename TEXT NOT NULL,
-        originalName TEXT NOT NULL,
-        uploadPath TEXT NOT NULL,
-        downloadUrl TEXT NOT NULL,
-        uploadedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `, (err) => {
-      if (err) {
-        console.error('Error creating photo_uploads table:', err);
-      } else {
-        console.log('Photo_uploads table created successfully');
-      }
-    });
-  }
-
-  private async ensureTablesExist() {
-    return new Promise<void>((resolve, reject) => {
-      this.db.run(`
+  private async init() {
+    try {
+      // Create users table
+      await client.execute(`
         CREATE TABLE IF NOT EXISTS users (
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
@@ -75,127 +38,125 @@ class Database {
           phone TEXT NOT NULL,
           registeredAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-      `, (err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS photo_uploads (
-            id TEXT PRIMARY KEY,
-            filename TEXT NOT NULL,
-            originalName TEXT NOT NULL,
-            uploadPath TEXT NOT NULL,
-            downloadUrl TEXT NOT NULL,
-            uploadedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-          )
-        `, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      });
-    });
+      `);
+      console.log('Users table created successfully');
+
+      // Create photo_uploads table
+      await client.execute(`
+        CREATE TABLE IF NOT EXISTS photo_uploads (
+          id TEXT PRIMARY KEY,
+          filename TEXT NOT NULL,
+          originalName TEXT NOT NULL,
+          uploadPath TEXT NOT NULL,
+          downloadUrl TEXT NOT NULL,
+          uploadedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      console.log('Photo_uploads table created successfully');
+    } catch (err) {
+      console.error('Error creating tables:', err);
+    }
+  }
+
+  private async ensureTablesExist() {
+    try {
+      await client.execute(`
+        CREATE TABLE IF NOT EXISTS users (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          phone TEXT NOT NULL,
+          registeredAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      
+      await client.execute(`
+        CREATE TABLE IF NOT EXISTS photo_uploads (
+          id TEXT PRIMARY KEY,
+          filename TEXT NOT NULL,
+          originalName TEXT NOT NULL,
+          uploadPath TEXT NOT NULL,
+          downloadUrl TEXT NOT NULL,
+          uploadedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+    } catch (err) {
+      throw err;
+    }
   }
 
   async createUser(user: Omit<User, 'registeredAt'>): Promise<User> {
     await this.ensureTablesExist();
     
-    return new Promise((resolve, reject) => {
-      this.db.run(
-        'INSERT INTO users (id, name, email, phone) VALUES (?, ?, ?, ?)',
-        [user.id, user.name, user.email, user.phone],
-        (err: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          
-          this.db.get(
-            'SELECT * FROM users WHERE id = ?',
-            [user.id],
-            (err: any, row: any) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(row as User);
-            }
-          );
-        }
-      );
-    });
+    try {
+      await client.execute({
+        sql: 'INSERT INTO users (id, name, email, phone) VALUES (?, ?, ?, ?)',
+        args: [user.id, user.name, user.email, user.phone]
+      });
+      
+      const result = await client.execute({
+        sql: 'SELECT * FROM users WHERE id = ?',
+        args: [user.id]
+      });
+      
+      return result.rows[0] as User;
+    } catch (err) {
+      throw err;
+    }
   }
 
   async getAllUsers(): Promise<User[]> {
     await this.ensureTablesExist();
     
-    return new Promise((resolve, reject) => {
-      this.db.all(
-        'SELECT * FROM users ORDER BY registeredAt DESC',
-        (err: any, rows: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(rows as User[]);
-        }
-      );
-    });
+    try {
+      const result = await client.execute({
+        sql: 'SELECT * FROM users ORDER BY registeredAt DESC'
+      });
+      
+      return result.rows as User[];
+    } catch (err) {
+      throw err;
+    }
   }
 
   async createPhotoUpload(photo: Omit<PhotoUpload, 'uploadedAt'>): Promise<PhotoUpload> {
     await this.ensureTablesExist();
     
-    return new Promise((resolve, reject) => {
-      this.db.run(
-        'INSERT INTO photo_uploads (id, filename, originalName, uploadPath, downloadUrl) VALUES (?, ?, ?, ?, ?)',
-        [photo.id, photo.filename, photo.originalName, photo.uploadPath, photo.downloadUrl],
-        (err: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          
-          this.db.get(
-            'SELECT * FROM photo_uploads WHERE id = ?',
-            [photo.id],
-            (err: any, row: any) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(row as PhotoUpload);
-            }
-          );
-        }
-      );
-    });
+    try {
+      await client.execute({
+        sql: 'INSERT INTO photo_uploads (id, filename, originalName, uploadPath, downloadUrl) VALUES (?, ?, ?, ?, ?)',
+        args: [photo.id, photo.filename, photo.originalName, photo.uploadPath, photo.downloadUrl]
+      });
+      
+      const result = await client.execute({
+        sql: 'SELECT * FROM photo_uploads WHERE id = ?',
+        args: [photo.id]
+      });
+      
+      return result.rows[0] as PhotoUpload;
+    } catch (err) {
+      throw err;
+    }
   }
 
   async getPhotoUpload(id: string): Promise<PhotoUpload | null> {
     await this.ensureTablesExist();
     
-    return new Promise((resolve, reject) => {
-      this.db.get(
-        'SELECT * FROM photo_uploads WHERE id = ?',
-        [id],
-        (err: any, row: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(row as PhotoUpload | null);
-        }
-      );
-    });
+    try {
+      const result = await client.execute({
+        sql: 'SELECT * FROM photo_uploads WHERE id = ?',
+        args: [id]
+      });
+      
+      return result.rows[0] as PhotoUpload | null;
+    } catch (err) {
+      throw err;
+    }
   }
 
   close() {
-    this.db.close();
+    // Turso client doesn't need explicit closing
+    // The connection is managed automatically
   }
 }
 

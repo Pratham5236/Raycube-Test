@@ -24,6 +24,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, user });
   } catch (error) {
     console.error('Registration error:', error);
+    
+    // Check if it's a duplicate email constraint error
+    if (error instanceof Error && error.message.includes('UNIQUE constraint failed: users.email')) {
+      return NextResponse.json(
+        { error: 'An account with this email already exists. Please use a different email address.' },
+        { status: 409 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Registration failed' },
       { status: 500 }

@@ -51,7 +51,8 @@ export default function Home() {
         setIsRegistered(true);
         setIsModalOpen(false);
       } else {
-        alert('Registration failed. Please try again.');
+        const json = await response.json();
+        alert(json.error || 'Registration failed. Please try again.');
       }
     } catch (error) {
       alert('Registration failed. Please try again.');
@@ -329,7 +330,7 @@ function MenuSection() {
       name: "Pepperoni Supreme",
       description: "Classic pepperoni with our signature sauce and mozzarella cheese.",
       price: "$12.99",
-      image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+      image: "/pepperoni.jpeg",
       rating: 5
     },
     {
@@ -337,7 +338,7 @@ function MenuSection() {
       name: "Margherita Classic",
       description: "Fresh tomatoes, basil, and mozzarella on our thin crust.",
       price: "$10.99",
-      image: "https://images.unsplash.com/photo-1598023696416-0193a0bcd302?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cGl6emElMjBtYXJnaGVyaXRhfGVufDB8fDB8fHww",
+      image: "/margherita.jpeg",
       rating: 5
     },
     {
@@ -345,7 +346,7 @@ function MenuSection() {
       name: "BBQ Chicken",
       description: "Grilled chicken, BBQ sauce, red onions, and cilantro.",
       price: "$14.99",
-      image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+      image: "/BBQ.jpeg",
       rating: 5
     }
   ];
@@ -546,55 +547,22 @@ function RegistrationModal({ formData, onInputChange, onSubmit, isSubmitting }: 
 
 // YouTube Download Button Component
 function YouTubeDownloadButton() {
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    try {
-      const response = await fetch('/api/youtube-download', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setDownloadUrl(result.downloadUrl);
-        // Open the download page in a new tab
-        window.open(result.downloadUrl, '_blank');
-      } else {
-        alert('Download failed. Please try again.');
-      }
-    } catch (error) {
-      alert('Download failed. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
+  const handleDownload = () => {
+    // Direct download URL - replace with your actual download link
+    const downloadUrl = 'https://sakm9p8wxgr8pari.public.blob.vercel-storage.com/Rick%20Astley%20-%20Never%20Gonna%20Give%20You%20Up%20%28Official%20Video%29%20%284K%20Remaster%29%20-%20Rick%20Astley%20%28720p%2C%20h264%29.mp4?download=1';
+    window.open(downloadUrl, '_blank');
   };
 
   return (
     <Button 
       onClick={handleDownload}
-      disabled={isDownloading}
       className="h-14 bg-red-600 hover:bg-red-700 text-lg font-semibold rounded-xl shadow-lg hover:shadow-red-500/25 transition-all duration-300 transform hover:scale-105"
     >
-      {isDownloading ? (
-        <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          <span>Processing...</span>
-        </div>
-      ) : (
-        <div className="flex items-center space-x-2">
-          <Download className="w-5 h-5" />
-          <span>Download Video</span>
-          <ExternalLink className="w-4 h-4" />
-        </div>
-      )}
+      <div className="flex items-center space-x-2">
+        <Download className="w-5 h-5" />
+        <span>Download Video</span>
+        <ExternalLink className="w-4 h-4" />
+      </div>
     </Button>
   );
 }

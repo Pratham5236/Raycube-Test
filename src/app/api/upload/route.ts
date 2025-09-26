@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { database } from '@/lib/database';
 import { generateId } from '@/lib/utils';
-import { ensureUploadDir, generateDownloadUrl, isValidImageFile } from '@/lib/server-utils';
-import path from 'path';
-import fs from 'fs';
+import { isValidImageFile } from '@/lib/server-utils';
+import { put } from '@vercel/blob';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,28 +25,21 @@ export async function POST(request: NextRequest) {
 
     // Generate unique filename
     const fileId = generateId();
-    const fileExtension = path.extname(file.name);
-    const filename = `${fileId}${fileExtension}`;
+    const fileExtension = file.name.split('.').pop();
+    const filename = `${fileId}.${fileExtension}`;
     
-    // Ensure upload directory exists
-    const uploadDir = ensureUploadDir();
-    const filePath = path.join(uploadDir, filename);
-    
-    // Save file
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    fs.writeFileSync(filePath, buffer);
-    
-    // Generate download URL
-    const downloadUrl = generateDownloadUrl(filename);
+    // Upload to Vercel Blob
+    const blob = await put(filename, file, {
+      access: 'public',
+    });
     
     // Save to database
     const photoUpload = await database.createPhotoUpload({
       id: fileId,
       filename,
       originalName: file.name,
-      uploadPath: filePath,
-      downloadUrl
+      uploadPath: blob.url, // Store the blob URL instead of local path
+      downloadUrl: blob.downloadUrl
     });
 
     return NextResponse.json({

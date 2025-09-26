@@ -8,10 +8,12 @@
     "start": "next start"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.15",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.0.2",
+    "@vercel/blob": "^2.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "lucide-react": "^0.263.1",
@@ -19,7 +21,6 @@
     "qrcode": "^1.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "sqlite3": "^5.1.6",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.0"
