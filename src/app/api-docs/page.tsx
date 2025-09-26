@@ -298,7 +298,7 @@ export default function APIDocsPage() {
             
             <div>
               <h4 className="font-semibold text-gray-900 mb-2">Base URL</h4>
-              <code className="bg-gray-100 px-3 py-1 rounded text-sm">http://localhost:3000</code>
+              <code className="bg-gray-100 px-3 py-1 rounded text-sm">{process.env.NEXT_PUBLIC_BASE_URL}</code>
             </div>
           </CardContent>
         </Card>
